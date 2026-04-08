@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المختبر الشامل لتاريخ الفيزياء</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-cyan: #22d3ee;
+            --primary-purple: #a855f7;
+            --bg-dark: #020617;
+            --card-bg: rgba(15, 23, 42, 0.9);
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark);
+            color: #f1f5f9;
+            scroll-behavior: smooth;
+        }
+
+        /* Professional Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-cyan); }
+
+        .glass-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 15px rgba(34, 211, 238, 0.5);
+        }
+
+        .anim-border {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .anim-border::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(transparent, transparent, transparent, var(--primary-cyan));
+            animation: rotate 6s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        .sidebar-item:hover {
+            background: rgba(34, 211, 238, 0.1);
+            border-right: 4px solid var(--primary-cyan);
+        }
+
+        canvas {
+            border-radius: 12px;
+            background: #000;
+        }
+
+        .node-active {
+            background: var(--primary-cyan);
+            box-shadow: 0 0 20px var(--primary-cyan);
+        }
+
+        /* Custom Tabs UI */
+        .tab-btn.active {
+            background: var(--primary-cyan);
+            color: black;
+            font-weight: bold;
+        }
+
+        .physics-formula {
+            font-family: 'Courier New', Courier, monospace;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--primary-cyan);
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Sidebar Navigation -->
+    <aside class="hidden lg:flex flex-col w-72 bg-slate-900 border-l border-slate-800 p-6 sticky top-0 h-screen z-50">
+        <div class="mb-10 text-center">
+            <h2 class="text-2xl font-black glow-text italic">PHYSICS LAB</h2>
+            <p class="text-[10px] text-slate-500 tracking-[0.2em] uppercase mt-1">Version 4.0 Gold Edition</p>
+        </div>
+
+        <nav class="space-y-2 flex-1">
+            <a href="#hero" class="sidebar-item flex items-center p-3 rounded-lg transition-all group">
+                <span class="w-8">🏠</span>
+                <span>الواجهة الرئيسية</span>
+            </a>
+            <a href="#timeline-sec" class="sidebar-item flex items-center p-3 rounded-lg transition-all group">
+                <span class="w-8">⏳</span>
+                <span>الخط الزمني الممتد</span>
+            </a>
+            <a href="#simulation-sec" class="sidebar-item flex items-center p-3 rounded-lg transition-all group">
+                <span class="w-8">⚙️</span>
+                <span>المحاكاة التفاعلية</span>
+            </a>
+            <a href="#encyclopedia-sec" class="sidebar-item flex items-center p-3 rounded-lg transition-all group">
+                <span class="w-8">📖</span>
+                <span>الأرشيف المعرفي</span>
+            </a>
+            <a href="#authors-sec" class="sidebar-item flex items-center p-3 rounded-lg transition-all group">
+                <span class="w-8">👤</span>
+                <span>أعظم الفيزيائيين</span>
+            </a>
+        </nav>
+
+        <div class="mt-auto p-4 glass-panel rounded-xl text-[11px] text-slate-400">
+            <p>المصادر: Cambridge, Max Planck Institute, Oxford Physics Archive.</p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+
+        <!-- Hero Section -->
+        <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden px-6">
+            <div class="absolute inset-0 z-0">
+                <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-cyan-500/10 rounded-full blur-[100px]"></div>
+                <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-[120px]"></div>
+            </div>
+
+            <div class="relative z-10 text-center max-w-5xl">
+                <div class="inline-block px-4 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-sm mb-6 animate-bounce">
+                    استكشف أسرار الكون عبر العصور
+                </div>
+                <h1 class="text-6xl md:text-8xl font-black mb-8 leading-tight">
+                    تاريخ العلم الذي <br/>
+                    <span class="text-cyan-400">شكل واقعنا الحديث</span>
+                </h1>
+                <p class="text-xl text-slate-400 mb-10 max-w-3xl mx-auto leading-relaxed">
+                    من أول تأملات الإنسان في النجوم إلى تحطيم الذرة في سيرن. هذا المختبر ليس مجرد كود، بل هو رحلة بصرية وعلمية عبر أعظم العقول التي عرفتها البشرية.
+                </p>
+                <div class="flex flex-wrap justify-center gap-6">
+                    <button onclick="document.getElementById('simulation-sec').scrollIntoView()" class="bg-cyan-500 hover:bg-cyan-400 text-black px-10 py-4 rounded-full font-black text-lg shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-105">
+                        ابدأ التجربة الآن
+                    </button>
+                    <button onclick="document.getElementById('encyclopedia-sec').scrollIntoView()" class="border border-slate-700 hover:border-cyan-500 px-10 py-4 rounded-full font-bold text-lg transition-all">
+                        تصفح الأرشيف
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Timeline Section -->
+        <section id="timeline-sec" class="py-24 px-6 bg-slate-950/50">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex items-end justify-between mb-16">
+                    <div>
+                        <h2 class="text-4xl font-black mb-2">الخط الزمني الممتد</h2>
+                        <p class="text-slate-500 italic">توثيق القفزات المعرفية الكبرى</p>
+                    </div>
+                    <div class="hidden md:block h-[1px] flex-1 mx-10 bg-slate-800"></div>
+                </div>
+
+                <div class="relative space-y-24">
+                    <div class="absolute right-0 md:right-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-cyan-500 via-purple-500 to-transparent"></div>
+
+                    <!-- Node 1: Physics of Antiquity -->
+                    <div class="relative flex flex-col md:flex-row items-center group">
+                        <div class="md:w-1/2 md:pl-16 mb-8 md:mb-0">
+                            <div class="glass-panel p-8 rounded-3xl hover:border-cyan-500/50 transition-all transform group-hover:-translate-x-2">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <span class="text-4xl">🏛️</span>
+                                    <h3 class="text-2xl font-bold text-cyan-400">فيزياء العصور القديمة</h3>
+                                </div>
+                                <p class="text-slate-400 leading-relaxed">
+                                    بدأت الفيزياء كفلسفة طبيعية. أرسطو (384 ق.م) وضع القواعد الأولى للحركة، رغم أنها كانت مبنية على الملاحظة الحسية فقط. أرخميدس في "سيراكيوز" أدخل الرياضيات إلى الفيزياء عبر قوانين العتلات والطفو، مصرحاً بعبارته الشهيرة: <span class="physics-formula">"أعطني مكاناً لأقف عليه، وسأحرك الأرض"</span>.
+                                </p>
+                                <div class="mt-4 flex gap-2">
+                                    <span class="px-2 py-1 bg-slate-800 rounded text-[10px]">اليونان القديمة</span>
+                                    <span class="px-2 py-1 bg-slate-800 rounded text-[10px]">الاستاتيكا</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute right-[-10px] md:right-auto md:left-1/2 md:-translate-x-1/2 w-5 h-5 bg-cyan-500 rounded-full z-10 border-4 border-slate-950"></div>
+                        <div class="md:w-1/2"></div>
+                    </div>
+
+                    <!-- Node 2: Islamic Scientific Revolution -->
+                    <div class="relative flex flex-col md:flex-row-reverse items-center group">
+                        <div class="md:w-1/2 md:pr-16 mb-8 md:mb-0 text-right">
+                            <div class="glass-panel p-8 rounded-3xl border-emerald-500/20 hover:border-emerald-500/50 transition-all transform group-hover:translate-x-2">
+                                <div class="flex items-center flex-row-reverse gap-4 mb-4">
+                                    <span class="text-4xl">🕌</span>
+                                    <h3 class="text-2xl font-bold text-emerald-400">الثورة العلمية الإسلامية</h3>
+                                </div>
+                                <p class="text-slate-400 leading-relaxed">
+                                    الحسن بن الهيثم (965-1040 م) يعتبر الأب الحقيقي للمنهج العلمي. في كتابه "المناظر"، دحض نظرية الانبعاث اليونانية وأثبت أن الضوء ينعكس من الأجسام إلى العين. قام البيروني بحساب كثافة المعادن بدقة مذهلة، وقام الخازني بدراسة الجاذبية نحو مركز الأرض قبل نيوتن بقرون.
+                                </p>
+                                <div class="mt-4 flex justify-end gap-2">
+                                    <span class="px-2 py-1 bg-slate-800 rounded text-[10px]">ابن الهيثم</span>
+                                    <span class="px-2 py-1 bg-slate-800 rounded text-[10px]">البصريات</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute right-[-10px] md:right-auto md:left-1/2 md:-translate-x-1/2 w-5 h-5 bg-emerald-500 rounded-full z-10 border-4 border-slate-950"></div>
+                        <div class="md:w-1/2"></div>
+                    </div>
+
+                    <!-- Node 3: The Newtonian Era -->
+                    <div class="relative flex flex-col md:flex-row items-center group">
+                        <div class="md:w-1/2 md:pl-16 mb-8 md:mb-0">
+                            <div class="glass-panel p-8 rounded-3xl border-purple-500/20 hover:border-purple-500/50 transition-all transform group-hover:-translate-x-2">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <span class="text-4xl">🍎</span>
+                                    <h3 class="text-2xl font-bold text-purple-400">عصر نيوتن والتحليل الرياضي</h3>
+                                </div>
+                                <p class="text-slate-400 leading-relaxed">
+                                    عام 1687، نشر إسحاق نيوتن كتابه "Philosophiæ Naturalis Principia Mathematica". قدم فيه قوانين الحركة الثلاث وقانون الجذب العام. <span class="physics-formula">F = G(m1m2/r²)</span>. هذا العمل لم يفسر حركة التفاحة فحسب، بل وحد قوانين الأرض بحركة الكواكب في السماء لأول مرة.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="absolute right-[-10px] md:right-auto md:left-1/2 md:-translate-x-1/2 w-5 h-5 bg-purple-500 rounded-full z-10 border-4 border-slate-950"></div>
+                        <div class="md:w-1/2"></div>
+                    </div>
+
+                    <!-- Node 4: The Quantum Leap -->
+                    <div class="relative flex flex-col md:flex-row-reverse items-center group">
+                        <div class="md:w-1/2 md:pr-16 mb-8 md:mb-0 text-right">
+                            <div class="glass-panel p-8 rounded-3xl border-orange-500/20 hover:border-orange-500/50 transition-all transform group-hover:translate-x-2">
+                                <div class="flex items-center flex-row-reverse gap-4 mb-4">
+                                    <span class="text-4xl">⚛️</span>
+                                    <h3 class="text-2xl font-bold text-orange-400">القرن العشرين: الكم والنسبية</h3>
+                                </div>
+                                <p class="text-slate-400 leading-relaxed">
+                                    تحطمت الفيزياء الكلاسيكية عند المقاييس الصغيرة جداً والكبيرة جداً. أينشتاين قدم النسبية (E=mc²)، وماكس بلانك اكتشف أن الطاقة تأتي في حزم (كمات). ثم جاء هايزنبرغ بمبدأ الشك، معلناً أن الكون في جوهره ليس حتمياً كما ظن نيوتن، بل هو احتمالي.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="absolute right-[-10px] md:right-auto md:left-1/2 md:-translate-x-1/2 w-5 h-5 bg-orange-500 rounded-full z-10 border-4 border-slate-950"></div>
+                        <div class="md:w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simulation Section -->
+        <section id="simulation-sec" class="py-24 px-6 relative">
+            <div class="max-w-7xl mx-auto">
+                <h2 class="text-5xl font-black text-center mb-16 glow-text">منصة المحاكاة التفاعلية</h2>
+                
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    <!-- Controls Sidebar -->
+                    <div class="xl:col-span-1 space-y-6">
+                        <div class="glass-panel p-6 rounded-3xl">
+                            <h4 class="text-xl font-bold mb-6 flex items-center gap-2">
+                                <span class="w-2 h-8 bg-cyan-500 rounded"></span>
+                                اختيار المختبر
+                            </h4>
+                            <div class="space-y-3">
+                                <button onclick="selectSim('projectile')" id="btn-projectile" class="sim-selector w-full p-4 rounded-xl border border-slate-800 text-right transition-all hover:bg-slate-800 flex justify-between items-center group active">
+                                    <span>المقذوفات (غاليليو)</span>
+                                    <span class="opacity-0 group-hover:opacity-100 transition-opacity">🚀</span>
+                                </button>
+                                <button onclick="selectSim('magnet')" id="btn-magnet" class="sim-selector w-full p-4 rounded-xl border border-slate-800 text-right transition-all hover:bg-slate-800 flex justify-between items-center group">
+                                    <span>المغناطيسية (فاراداي)</span>
+                                    <span>ب</span>
+                                </button>
+                                <button onclick="selectSim('optics')" id="btn-optics" class="sim-selector w-full p-4 rounded-xl border border-slate-800 text-right transition-all hover:bg-slate-800 flex justify-between items-center group">
+                                    <span>الانكسار (ابن الهيثم)</span>
+                                    <span>🌈</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Analysis Chart -->
+                        <div class="glass-panel p-6 rounded-3xl">
+                            <h4 class="text-lg font-bold mb-4">تحليل البيانات اللحظي</h4>
+                            <canvas id="analysisChart" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Display -->
+                    <div class="xl:col-span-2 space-y-6">
+                        <div class="glass-panel p-4 rounded-3xl relative">
+                            <div class="absolute top-8 left-8 z-10 flex gap-2">
+                                <div id="sim-status" class="bg-black/50 backdrop-blur px-3 py-1 rounded text-[10px] text-cyan-400 font-mono border border-cyan-500/30">SYSTEM: READY</div>
+                            </div>
+                            <canvas id="mainSimCanvas" class="w-full aspect-video border border-slate-800"></canvas>
+                            
+                            <!-- Control HUD -->
+                            <div id="sim-controls" class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <!-- Dynamic Controls based on simulation -->
+                            </div>
+                        </div>
+
+                        <div id="sim-description" class="glass-panel p-6 rounded-3xl border-l-4 border-cyan-500">
+                            <!-- Description text -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Encyclopedia Section -->
+        <section id="encyclopedia-sec" class="py-24 px-6 bg-slate-900/30">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-black mb-4">الموسوعة المعرفية الشاملة</h2>
+                    <p class="text-slate-500">مراجعة نقدية للمفاهيم الفيزيائية من مصادر عالمية</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Concept 1 -->
+                    <div class="glass-panel p-8 rounded-3xl group hover:bg-slate-800/50 transition-all">
+                        <div class="text-cyan-500 text-3xl mb-6 font-mono">01.</div>
+                        <h3 class="text-2xl font-bold mb-4 group-hover:text-cyan-400 transition-colors">الديناميكا الحرارية</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed mb-6">
+                            دراسة الحرارة والشغل والطاقة. القوانين الثلاثة للديناميكا الحرارية تحكم كل شيء، من محرك سيارتك إلى تمدد الكون نفسه. المصدر: <span class="italic">Oxford University Physics Dept.</span>
+                        </p>
+                        <a href="#" class="text-cyan-500 font-bold flex items-center gap-2 hover:gap-4 transition-all">
+                            اقرأ المزيد <span>←</span>
+                        </a>
+                    </div>
+
+                    <!-- Concept 2 -->
+                    <div class="glass-panel p-8 rounded-3xl group hover:bg-slate-800/50 transition-all border-purple-500/10">
+                        <div class="text-purple-500 text-3xl mb-6 font-mono">02.</div>
+                        <h3 class="text-2xl font-bold mb-4 group-hover:text-purple-400 transition-colors">النظرية الكهرومغناطيسية</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed mb-6">
+                            ماكسويل (1865) وحد الكهرباء والمغناطيسية والضوء. بدون هذه المعادلات، لن تتوفر الهواتف الذكية أو الإنترنت أو الراديو. المصدر: <span class="italic">MIT OpenCourseWare.</span>
+                        </p>
+                        <a href="#" class="text-purple-500 font-bold flex items-center gap-2 hover:gap-4 transition-all">
+                            اقرأ المزيد <span>←</span>
+                        </a>
+                    </div>
+
+                    <!-- Concept 3 -->
+                    <div class="glass-panel p-8 rounded-3xl group hover:bg-slate-800/50 transition-all border-orange-500/10">
+                        <div class="text-orange-500 text-3xl mb-6 font-mono">03.</div>
+                        <h3 class="text-2xl font-bold mb-4 group-hover:text-orange-400 transition-colors">فيزياء الجسيمات</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed mb-6">
+                            البحث عن "جسيم الرب" (بوزون هيغز). كيف يكتسب المادة كتلتها؟ رحلة في أعماق البروتونات والنيوترونات. المصدر: <span class="italic">CERN Knowledge Base.</span>
+                        </p>
+                        <a href="#" class="text-orange-500 font-bold flex items-center gap-2 hover:gap-4 transition-all">
+                            اقرأ المزيد <span>←</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Core variables
+        const canvas = document.getElementById('mainSimCanvas');
+        const ctx = canvas.getContext('2d');
+        const chartCtx = document.getElementById('analysisChart').getContext('2d');
+        let currentSim = 'projectile';
+        let animationId;
+        let chart;
+
+        // --- Initialization ---
+        window.onload = () => {
+            resizeCanvas();
+            initChart();
+            selectSim('projectile');
+        };
+
+        window.onresize = resizeCanvas;
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth - 32;
+            canvas.height = canvas.width * 0.5625; // 16:9
+        }
+
+        function initChart() {
+            chart = new Chart(chartCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'البيانات المسجلة',
+                        data: [],
+                        borderColor: '#22d3ee',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { display: false },
+                        x: { display: false }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // --- Simulation Selection ---
+        function selectSim(type) {
+            currentSim = type;
+            cancelAnimationFrame(animationId);
+            
+            // UI Updates
+            document.querySelectorAll('.sim-selector').forEach(btn => btn.classList.remove('bg-slate-800', 'border-cyan-500', 'active'));
+            document.getElementById('btn-' + type).classList.add('bg-slate-800', 'border-cyan-500', 'active');
+            
+            const controls = document.getElementById('sim-controls');
+            const desc = document.getElementById('sim-description');
+            
+            if (type === 'projectile') {
+                desc.innerHTML = `<h4 class="font-bold mb-2">مختبر المقذوفات:</h4> <p class="text-sm text-slate-400">كان غاليليو أول من أثبت أن حركة المقذوف هي مزيج من حركة أفقية ثابتة وحركة رأسية متسارعة بسبب الجاذبية. قم بتعديل الزاوية والسرعة لمشاهدة المسار القطعي.</p>`;
+                controls.innerHTML = `
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-500 uppercase">الزاوية (درجة)</label>
+                        <input type="range" id="angle" min="0" max="90" value="45" class="w-full accent-cyan-500">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] text-slate-500 uppercase">السرعة (م/ث)</label>
+                        <input type="range" id="speed" min="10" max="100" value="50" class="w-full accent-cyan-500">
+                    </div>
+                    <button onclick="fireProjectile()" class="col-span-2 bg-cyan-500 text-black font-bold py-2 rounded-xl mt-2">إطلاق المقذوف</button>
+                `;
+                initProjectileSim();
+            } else if (type === 'magnet') {
+                desc.innerHTML = `<h4 class="font-bold mb-2">مختبر الكهرومغناطيسية:</h4> <p class="text-sm text-slate-400">اكتشف مايكل فاراداي أن المغناطيس المتحرك يولد تياراً كهربائياً. حرك المغناطيس بالقرب من الملف لمشاهدة خطوط القوة المغناطيسية وتدفق الإلكترونات.</p>`;
+                controls.innerHTML = `
+                    <div class="col-span-4 flex items-center justify-center gap-4">
+                        <span class="text-xs text-slate-400 italic">حرك الفأرة فوق المختبر لتغيير موقع المغناطيس</span>
+                    </div>
+                `;
+                initMagnetSim();
+            } else if (type === 'optics') {
+                desc.innerHTML = `<h4 class="font-bold mb-2">مختبر البصريات (انكسار الضوء):</h4> <p class="text-sm text-slate-400">ابن الهيثم درس كيفية انحراف الضوء عند انتقاله بين وسطين مختلفين. قم بتعديل "معامل الانكسار" لمحاكاة مواد مختلفة مثل الماء أو الزجاج.</p>`;
+                controls.innerHTML = `
+                    <div class="col-span-2 space-y-1">
+                        <label class="text-[10px] text-slate-500 uppercase">معامل الانكسار (الوسط 2)</label>
+                        <input type="range" id="n2" min="1" max="2.5" step="0.1" value="1.5" class="w-full accent-emerald-500">
+                    </div>
+                    <div class="col-span-2 flex items-end">
+                        <div class="text-[10px] text-emerald-400 font-mono" id="n-value">N = 1.5 (زجاج)</div>
+                    </div>
+                `;
+                initOpticsSim();
+            }
+        }
+
+        // --- 1. Projectile Simulation Logic ---
+        let projectileState = { x: 0, y: 0, vx: 0, vy: 0, path: [], active: false };
+        function initProjectileSim() {
+            projectileState.active = false;
+            projectileState.path = [];
+            drawProjectileFrame();
+        }
+
+        function fireProjectile() {
+            const angle = document.getElementById('angle').value * Math.PI / 180;
+            const speed = document.getElementById('speed').value / 5;
+            projectileState.x = 50;
+            projectileState.y = canvas.height - 50;
+            projectileState.vx = speed * Math.cos(angle);
+            projectileState.vy = -speed * Math.sin(angle);
+            projectileState.path = [];
+            projectileState.active = true;
+            
+            // Clear chart
+            chart.data.labels = [];
+            chart.data.datasets[0].data = [];
+            
+            animateProjectile();
+        }
+
+        function animateProjectile() {
+            if (!projectileState.active) return;
+            
+            projectileState.x += projectileState.vx;
+            projectileState.y += projectileState.vy;
+            projectileState.vy += 0.05; // Gravity
+            
+            projectileState.path.push({x: projectileState.x, y: projectileState.y});
+            
+            // Update Chart
+            if (projectileState.path.length % 5 === 0) {
+                chart.data.labels.push("");
+                chart.data.datasets[0].data.push(canvas.height - projectileState.y);
+                chart.update('none');
+            }
+
+            if (projectileState.y > canvas.height - 50) {
+                projectileState.active = false;
+                document.getElementById('sim-status').innerText = "SYSTEM: IMPACT DETECTED";
+            }
+            
+            drawProjectileFrame();
+            animationId = requestAnimationFrame(animateProjectile);
+        }
+
+        function drawProjectileFrame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Floor
+            ctx.strokeStyle = '#334155';
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - 50);
+            ctx.lineTo(canvas.width, canvas.height - 50);
+            ctx.stroke();
+
+            // Path
+            ctx.strokeStyle = 'rgba(34, 211, 238, 0.3)';
+            ctx.beginPath();
+            projectileState.path.forEach((p, i) => {
+                if(i===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+            });
+            ctx.stroke();
+
+            // Projectile
+            ctx.fillStyle = '#22d3ee';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#22d3ee';
+            ctx.beginPath();
+            ctx.arc(projectileState.x, projectileState.y, 6, 0, Math.PI*2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        // --- 2. Magnet Simulation Logic ---
+        let magnetPos = { x: 200, y: 150 };
+        function initMagnetSim() {
+            canvas.onmousemove = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                magnetPos.x = e.clientX - rect.left;
+                magnetPos.y = e.clientY - rect.top;
+                drawMagnetFrame();
+                
+                // Update chart with magnetic flux approximation
+                const dist = Math.sqrt(Math.pow(magnetPos.x - canvas.width/2, 2) + Math.pow(magnetPos.y - canvas.height/2, 2));
+                chart.data.labels.push("");
+                chart.data.datasets[0].data.push(1000/dist);
+                if(chart.data.labels.length > 50) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                }
+                chart.update('none');
+            };
+            drawMagnetFrame();
+        }
+
+        function drawMagnetFrame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw Coil
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#f59e0b';
+            for(let i=0; i<5; i++) {
+                ctx.beginPath();
+                ctx.ellipse(canvas.width/2, canvas.height/2, 30, 80, 0, 0, Math.PI*2);
+                ctx.stroke();
+            }
+
+            // Draw Magnetic Field Lines (Simplified)
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(168, 85, 247, 0.2)';
+            for(let i=0; i<12; i++) {
+                const angle = (i / 12) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.ellipse(magnetPos.x, magnetPos.y, 100, 40, angle, 0, Math.PI*2);
+                ctx.stroke();
+            }
+
+            // Draw Magnet
+            ctx.fillStyle = '#ef4444'; // North
+            ctx.fillRect(magnetPos.x - 40, magnetPos.y - 15, 40, 30);
+            ctx.fillStyle = '#3b82f6'; // South
+            ctx.fillRect(magnetPos.x, magnetPos.y - 15, 40, 30);
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px Cairo';
+            ctx.fillText('N', magnetPos.x - 25, magnetPos.y + 5);
+            ctx.fillText('S', magnetPos.x + 15, magnetPos.y + 5);
+        }
+
+        // --- 3. Optics Simulation Logic ---
+        function initOpticsSim() {
+            canvas.onmousemove = null;
+            const nSlider = document.getElementById('n2');
+            nSlider.oninput = () => {
+                const n2 = nSlider.value;
+                document.getElementById('n-value').innerText = `N = ${n2}`;
+                drawOpticsFrame(n2);
+            };
+            drawOpticsFrame(1.5);
+        }
+
+        function drawOpticsFrame(n2) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const midY = canvas.height / 2;
+            
+            // Bottom Medium
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.1)';
+            ctx.fillRect(0, midY, canvas.width, midY);
+            
+            // Interface
+            ctx.strokeStyle = '#059669';
+            ctx.beginPath();
+            ctx.moveTo(0, midY);
+            ctx.lineTo(canvas.width, midY);
+            ctx.stroke();
+
+            // Rays
+            const incidentAngle = 45 * Math.PI / 180;
+            const startX = canvas.width/2 - 200 * Math.sin(incidentAngle);
+            const startY = midY - 200 * Math.cos(incidentAngle);
+
+            // Incident
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(canvas.width/2, midY);
+            ctx.stroke();
+
+            // Refracted (Snell's Law: n1*sin1 = n2*sin2)
+            const n1 = 1.0;
+            const sin2 = (n1 * Math.sin(incidentAngle)) / n2;
+            const angle2 = Math.asin(sin2);
+
+            const endX = canvas.width/2 + 200 * Math.sin(angle2);
+            const endY = midY + 200 * Math.cos(angle2);
+
+            ctx.strokeStyle = '#10b981';
+            ctx.beginPath();
+            ctx.moveTo(canvas.width/2, midY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+            
+            // Labels
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('الوسط 1 (هواء)', 20, midY - 20);
+            ctx.fillText('الوسط 2 (مادة شفافة)', 20, midY + 30);
+        }
+    </script>
+</body>
+</html>
